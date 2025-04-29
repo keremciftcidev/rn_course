@@ -6,21 +6,38 @@ import {
   useForegroundPermissions,
   PermissionStatus,
 } from "expo-location";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getMapPreview } from "../../util/location";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useIsFocused,
+} from "@react-navigation/native";
 
 function LocationPicker() {
-
-  const [pickedLocation, setPickedLocation] = useState()
-  const navigation = useNavigation()
-
+  const [pickedLocation, setPickedLocation] = useState();
+  const isFocused = useIsFocused();
+  const navigation = useNavigation();
+  const route = useRoute();
 
   const [locationPermissionInformation, requestPermission] =
     useForegroundPermissions();
 
+  useEffect(() => {
+    if (isFocused && route.params) {
+      const mapPickedLocation = {
+        lat: route.params.pickedLat,
+        lng: route.params.pickedLng,
+      };
+      setPickedLocation(mapPickedLocation);
+    }
+   
+  }, [route, isFocused]);
+
   async function verifyPermission() {
-    if (locationPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+    if (
+      locationPermissionInformation.status === PermissionStatus.UNDETERMINED
+    ) {
       const permissionResponse = await requestPermission();
       return permissionResponse.granted;
     }
@@ -43,26 +60,28 @@ function LocationPicker() {
     }
     const location = await getCurrentPositionAsync();
     setPickedLocation({
-      lat:location.coords.latitude,
-      lng:location.coords.longitude
-    })
+      lat: location.coords.latitude,
+      lng: location.coords.longitude,
+    });
   }
 
   function pickOnMapHandler() {
-    navigation.navigate("Map")
+    navigation.navigate("Map");
   }
 
-  let locationPreview = <Text>No location picked yet.</Text>
-  if(pickedLocation){
-    locationPreview =  <Image style={styles.image} source={{uri: getMapPreview(pickedLocation.lat,pickedLocation.lng)}}/>
+  let locationPreview = <Text>No location picked yet.</Text>;
+  if (pickedLocation) {
+    locationPreview = (
+      <Image
+        style={styles.image}
+        source={{ uri: getMapPreview(pickedLocation.lat, pickedLocation.lng) }}
+      />
+    );
   }
 
   return (
     <View>
-      <View style={styles.mapPreview}>
-       {locationPreview}
-
-      </View>
+      <View style={styles.mapPreview}>{locationPreview}</View>
       <View style={styles.actions}>
         <OutlinedButton icon="location" onPress={getLocationHandler}>
           Locate User
@@ -86,19 +105,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.primary100,
-    overflow:"hidden",
+    overflow: "hidden",
     borderRadius: 4,
   },
   actions: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    
   },
-  image:{
-    width:"100%",
-    height:"100%",
-   
-
-  }
+  image: {
+    width: "100%",
+    height: "100%",
+  },
 });
