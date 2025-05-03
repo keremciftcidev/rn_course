@@ -23,7 +23,7 @@ function PlaceForm({onCreatePlace}) {
         setPickedLocation(location)
     },[])
     function savePlaceHandler(){
-        const placeData = new Place(enteredTitle,selectedImage,pickLocation)
+        const placeData = new Place(enteredTitle,selectedImage,pickedLocation)
        onCreatePlace(placeData)
     }
     return <ScrollView>
