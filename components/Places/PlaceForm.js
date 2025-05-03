@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
-import { ScrollView,  TextInput,Text,  View ,StyleSheet, Button} from "react-native";
+import { ScrollView,  TextInput,Text,  View ,StyleSheet} from "react-native";
 import { Colors } from "../../constants/colors";
 import ImagePicker from "./ImagePicker";
 import LocationPicker from "./LocationPicker";
+import Button from "../UI/Button";
+
 
 function PlaceForm() {
 
