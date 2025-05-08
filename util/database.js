@@ -5,7 +5,7 @@ const database = SQLite.openDatabaseSync("places.db");
 
 // Tablomuzu oluşturuyoruz (varsa yeniden oluşturmaz)
 export function init() {
- const promise  = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     database.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS places (
@@ -26,5 +26,29 @@ export function init() {
       );
     });
   });
-  return promise
+  return promise;
+}
+
+export function insertPlace(place) {
+  const promise = new Promise((resolve, reject) => {
+    database.transaction((tx) => {
+      tx.executeSql(
+        `INSERT INTO Places (title,imageUri,address,lat,lng) VALUES (?,?,?,?,?)`,
+        [
+          place.title,
+          place.imageUri,
+          place.address,
+          place.location.lat,
+          place.location.lng,
+        ],
+        (_, result)=>{
+          console.log(result)
+          resolve(result)
+        },
+        (_, error)=>{
+          reject(error)
+        }
+      );
+    });
+  });
 }

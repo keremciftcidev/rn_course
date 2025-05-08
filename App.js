@@ -6,35 +6,52 @@ import AddPlace from "./screens/AddPlace";
 import IconButton from "./components/UI/IconButton";
 import { Colors } from "./constants/colors";
 import Map from "./screens/Map";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { init } from "./util/database";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
+import { View } from "react-native";
+
+// Splash screen otomatik gizlenmesin
+SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [dbInitialized, setDbInitialized] = useState()
+  const [appIsReady, setAppIsReady] = useState(false);
+
   useEffect(() => {
-    init().then(()=>{
-      setDbInitialized(true)
-    }).catch((err)=>{
-      console.log(err)
-    })
-  }, [])
-  if(!dbInitialized){
-    return <AppLoading/>
+    async function prepareApp() {
+      try {
+        await init(); // Veritabanını başlat
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepareApp();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null; // Splash screen gösterilmeye devam eder
   }
 
-  
-
-
   return (
-    <>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <StatusBar style="dark" />
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
-            headerStyle: { backgroundColor: Colors.primary500 },headerTintColor:Colors.gray700,contentStyle:{backgroundColor:Colors.gray700}
+            headerStyle: { backgroundColor: Colors.primary500 },
+            headerTintColor: Colors.gray700,
+            contentStyle: { backgroundColor: Colors.gray700 },
           }}
         >
           <Stack.Screen
@@ -55,11 +72,11 @@ export default function App() {
           <Stack.Screen
             name="AddPlace"
             component={AddPlace}
-            options={{ title: "Add a new places" }}
+            options={{ title: "Add a new place" }}
           />
-        <Stack.Screen name="Map" component={Map}/>
+          <Stack.Screen name="Map" component={Map} />
         </Stack.Navigator>
       </NavigationContainer>
-    </>
+    </View>
   );
 }
